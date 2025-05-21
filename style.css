@@ -24,11 +24,18 @@ h1 {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* Nuevo estilo para el display de puntaje */
+/* Estilo para el display de puntaje actual */
 #scoreDisplay {
     font-size: 1.5em;
     color: #ecf0f1;
-    margin-bottom: 15px;
+    margin-bottom: 5px; /* Ajustado para dar espacio al nuevo elemento de puntaje máximo */
+}
+
+/* NUEVO estilo para el display de puntaje máximo */
+#highScoreDisplay {
+    font-size: 1.1em;
+    color: #f1c40f; /* Un color amarillo vibrante para el puntaje máximo */
+    margin-bottom: 15px; /* Margen para separarlo del canvas */
 }
 
 canvas {
@@ -52,8 +59,6 @@ canvas {
 #startButton:hover {
     background-color: #2ecc71; /* Un verde más claro al pasar el ratón */
 }
-
-/* ... (código CSS anterior) ... */
 
 #musicToggleButton {
     background-color: #3498db; /* Un azul para el botón de música */

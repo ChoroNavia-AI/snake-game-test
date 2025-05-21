@@ -2,10 +2,11 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const startButton = document.getElementById('startButton');
 const scoreDisplay = document.getElementById('scoreDisplay');
+// NUEVO High Score: Referencia al elemento del puntaje máximo
+const highScoreDisplay = document.getElementById('highScoreDisplay'); 
 const gameMusic = document.getElementById('gameMusic');
 const musicToggleButton = document.getElementById('musicToggleButton');
 
-// NUEVO SFX: Referencias a los elementos de audio para efectos de sonido
 const sfxEatNormal = document.getElementById('sfxEatNormal');
 const sfxEatSpecial = document.getElementById('sfxEatSpecial');
 const sfxGameOver = document.getElementById('sfxGameOver');
@@ -18,6 +19,8 @@ let specialFood = {};
 let dx = gridSize;
 let dy = 0;
 let score = 0;
+// NUEVO High Score: Variable para el puntaje máximo
+let highScore = 0; 
 let gameOver = false;
 let gameInterval;
 let specialFoodTimer;
@@ -29,15 +32,12 @@ const NORMAL_FOOD_SCORE = 1;
 
 let musicPlaying = false;
 
-// NUEVO SFX: Función auxiliar para reproducir SFX
 function playSFX(audioElement) {
-    audioElement.currentTime = 0; // Reinicia el audio a 0 para que siempre se reproduzca desde el inicio
+    audioElement.currentTime = 0;
     audioElement.play().catch(error => {
-        // Captura errores si el navegador bloquea la reproducción (ej. por políticas de autoplay)
         console.warn("No se pudo reproducir el SFX:", error);
     });
 }
-
 
 function generatePosition() {
     const maxX = canvas.width / gridSize;
@@ -108,12 +108,12 @@ function gameLoop() {
         specialFood = {};
         clearTimeout(specialFoodTimer);
         generateFood();
-        playSFX(sfxEatSpecial); // NUEVO SFX: Reproducir sonido de comer especial
+        playSFX(sfxEatSpecial);
     }
     else if (head.x === food.x && head.y === food.y) {
         score += NORMAL_FOOD_SCORE;
         generateFood();
-        playSFX(sfxEatNormal); // NUEVO SFX: Reproducir sonido de comer normal
+        playSFX(sfxEatNormal);
     } else {
         snake.pop();
     }
@@ -176,6 +176,8 @@ function startGame() {
     dy = 0;
     score = 0;
     scoreDisplay.textContent = `Puntaje: ${score}`;
+    // NUEVO High Score: Muestra el puntaje máximo al iniciar el juego
+    highScoreDisplay.textContent = `Puntaje Máximo: ${highScore}`; 
     generateFood();
     if (gameInterval) clearInterval(gameInterval);
     if (specialFoodTimer) clearTimeout(specialFoodTimer);
@@ -193,10 +195,20 @@ function endGame() {
     gameOver = true;
     clearInterval(gameInterval);
     if (specialFoodTimer) clearTimeout(specialFoodTimer);
-    alert(`¡Juego Terminado! Tu puntuación final fue: ${score}. Presiona "Reiniciar Juego" para volver a jugar.`);
+    
+    // NUEVO High Score: Comprueba y actualiza el puntaje máximo
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('snakeHighScore', highScore); // Guarda el nuevo puntaje máximo
+        highScoreDisplay.textContent = `Puntaje Máximo: ${highScore}`; // Actualiza el display
+        alert(`¡Nuevo Puntaje Máximo! Has logrado ${score} puntos.`); // Mensaje especial
+    } else {
+        alert(`¡Juego Terminado! Tu puntuación final fue: ${score}. El puntaje máximo es ${highScore}. Presiona "Reiniciar Juego" para volver a jugar.`);
+    }
+
     gameMusic.pause();
     gameMusic.currentTime = 0;
-    playSFX(sfxGameOver); // NUEVO SFX: Reproducir sonido de Game Over
+    playSFX(sfxGameOver);
 }
 
 function toggleMusic() {
@@ -219,11 +231,15 @@ document.addEventListener('keydown', changeDirection);
 startButton.addEventListener('click', startGame);
 musicToggleButton.addEventListener('click', toggleMusic);
 
+// NUEVO High Score: Carga el puntaje máximo al cargar la página
+// `localStorage.getItem('snakeHighScore')` recupera el valor, si no existe, `|| 0` lo inicializa a 0.
+highScore = parseInt(localStorage.getItem('snakeHighScore')) || 0; 
+highScoreDisplay.textContent = `Puntaje Máximo: ${highScore}`; // Muestra el puntaje al cargar
+
 generateFood();
 drawSnake();
 drawFood();
-gameMusic.volume = 0.3; // Volumen de la música de fondo
-// NUEVO SFX: Ajustar volumen de los efectos de sonido (puedes ajustarlos individualmente)
-sfxEatNormal.volume = 0.8;
+gameMusic.volume = 0.3;
+sfxEatNormal.volume = 0.6;
 sfxEatSpecial.volume = 0.8;
 sfxGameOver.volume = 1.0;

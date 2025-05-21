@@ -1,0 +1,54 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #2c3e50; /* Un gris oscuro para el fondo */
+    font-family: 'Arial', sans-serif;
+    color: #ecf0f1; /* Color de texto claro */
+}
+
+.game-container {
+    background-color: #34495e; /* Un gris un poco más claro para el contenedor */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+h1 {
+    color: #f1c40f; /* Un amarillo vibrante para el título */
+    margin-bottom: 20px;
+    font-size: 2.5em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Nuevo estilo para el display de puntaje */
+#scoreDisplay {
+    font-size: 1.5em;
+    color: #ecf0f1;
+    margin-bottom: 15px;
+}
+
+canvas {
+    background-color: #1a242f; /* Fondo del tablero de juego */
+    border: 5px solid #2980b9; /* Borde azul para el canvas */
+    display: block; /* Elimina espacios extra debajo del canvas */
+    margin: 0 auto 20px auto; /* Centra el canvas y añade margen inferior */
+}
+
+#startButton {
+    background-color: #27ae60; /* Verde para el botón de inicio */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#startButton:hover {
+    background-color: #2ecc71; /* Un verde más claro al pasar el ratón */
+}

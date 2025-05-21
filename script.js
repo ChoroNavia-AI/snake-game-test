@@ -224,6 +224,6 @@ drawSnake();
 drawFood();
 gameMusic.volume = 0.3; // Volumen de la música de fondo
 // NUEVO SFX: Ajustar volumen de los efectos de sonido (puedes ajustarlos individualmente)
-sfxEatNormal.volume = 0.6;
+sfxEatNormal.volume = 0.8;
 sfxEatSpecial.volume = 0.8;
 sfxGameOver.volume = 1.0;

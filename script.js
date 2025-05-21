@@ -2,8 +2,14 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const startButton = document.getElementById('startButton');
 const scoreDisplay = document.getElementById('scoreDisplay');
-const gameMusic = document.getElementById('gameMusic'); // NUEVO: Referencia al elemento de audio
-const musicToggleButton = document.getElementById('musicToggleButton'); // NUEVO: Referencia al botón de música
+const gameMusic = document.getElementById('gameMusic');
+const musicToggleButton = document.getElementById('musicToggleButton');
+
+// NUEVO SFX: Referencias a los elementos de audio para efectos de sonido
+const sfxEatNormal = document.getElementById('sfxEatNormal');
+const sfxEatSpecial = document.getElementById('sfxEatSpecial');
+const sfxGameOver = document.getElementById('sfxGameOver');
+
 
 const gridSize = 20;
 let snake = [{ x: 10, y: 10 }];
@@ -21,9 +27,18 @@ const SPECIAL_FOOD_DURATION = 5000;
 const SPECIAL_FOOD_SCORE = 10;
 const NORMAL_FOOD_SCORE = 1;
 
-let musicPlaying = false; // NUEVO: Estado de la música
+let musicPlaying = false;
 
-// Función para generar una posición aleatoria para la comida (normal o especial)
+// NUEVO SFX: Función auxiliar para reproducir SFX
+function playSFX(audioElement) {
+    audioElement.currentTime = 0; // Reinicia el audio a 0 para que siempre se reproduzca desde el inicio
+    audioElement.play().catch(error => {
+        // Captura errores si el navegador bloquea la reproducción (ej. por políticas de autoplay)
+        console.warn("No se pudo reproducir el SFX:", error);
+    });
+}
+
+
 function generatePosition() {
     const maxX = canvas.width / gridSize;
     const maxY = canvas.height / gridSize;
@@ -32,7 +47,6 @@ function generatePosition() {
         y: Math.floor(Math.random() * maxY) * gridSize
     };
 
-    // Asegurarse de que la posición no esté dentro de la serpiente
     for (let i = 0; i < snake.length; i++) {
         if (newPos.x === snake[i].x && newPos.y === snake[i].y) {
             return generatePosition();
@@ -94,10 +108,12 @@ function gameLoop() {
         specialFood = {};
         clearTimeout(specialFoodTimer);
         generateFood();
+        playSFX(sfxEatSpecial); // NUEVO SFX: Reproducir sonido de comer especial
     }
     else if (head.x === food.x && head.y === food.y) {
         score += NORMAL_FOOD_SCORE;
         generateFood();
+        playSFX(sfxEatNormal); // NUEVO SFX: Reproducir sonido de comer normal
     } else {
         snake.pop();
     }
@@ -153,7 +169,6 @@ function changeDirection(event) {
     }
 }
 
-// Función para iniciar el juego
 function startGame() {
     gameOver = false;
     snake = [{ x: 10 * gridSize, y: 10 * gridSize }];
@@ -167,27 +182,23 @@ function startGame() {
     gameInterval = setInterval(gameLoop, 100);
     startButton.textContent = "Reiniciar Juego";
 
-    // NUEVO: Reproducir la música al iniciar el juego
-    // Solo si el usuario ya ha interactuado con el botón de música
     if (musicPlaying) {
         gameMusic.play().catch(error => {
             console.log("No se pudo reproducir la música automáticamente:", error);
-            // Informar al usuario que necesita activar la música manualmente si el navegador lo bloqueó
         });
     }
 }
 
-// Función para terminar el juego
 function endGame() {
     gameOver = true;
     clearInterval(gameInterval);
     if (specialFoodTimer) clearTimeout(specialFoodTimer);
     alert(`¡Juego Terminado! Tu puntuación final fue: ${score}. Presiona "Reiniciar Juego" para volver a jugar.`);
-    gameMusic.pause(); // NUEVO: Pausar la música al terminar el juego
-    gameMusic.currentTime = 0; // NUEVO: Reiniciar la música al principio
+    gameMusic.pause();
+    gameMusic.currentTime = 0;
+    playSFX(sfxGameOver); // NUEVO SFX: Reproducir sonido de Game Over
 }
 
-// NUEVO: Función para alternar la reproducción de la música
 function toggleMusic() {
     if (gameMusic.paused) {
         gameMusic.play().then(() => {
@@ -204,15 +215,15 @@ function toggleMusic() {
     }
 }
 
-
-// Event Listeners
 document.addEventListener('keydown', changeDirection);
 startButton.addEventListener('click', startGame);
-musicToggleButton.addEventListener('click', toggleMusic); // NUEVO: Listener para el botón de música
+musicToggleButton.addEventListener('click', toggleMusic);
 
-// Iniciar el juego al cargar la página por primera vez
 generateFood();
 drawSnake();
 drawFood();
-// NUEVO: Ajustar el volumen por defecto (entre 0 y 1)
-gameMusic.volume = 1; // Volumen bajo para empezar
+gameMusic.volume = 0.3; // Volumen de la música de fondo
+// NUEVO SFX: Ajustar volumen de los efectos de sonido (puedes ajustarlos individualmente)
+sfxEatNormal.volume = 0.6;
+sfxEatSpecial.volume = 0.8;
+sfxGameOver.volume = 1.0;

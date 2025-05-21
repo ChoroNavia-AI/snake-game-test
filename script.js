@@ -1,24 +1,27 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const startButton = document.getElementById('startButton');
-const scoreDisplay = document.getElementById('scoreDisplay'); // Nuevo: Referencia al elemento del puntaje
+const scoreDisplay = document.getElementById('scoreDisplay');
+const gameMusic = document.getElementById('gameMusic'); // NUEVO: Referencia al elemento de audio
+const musicToggleButton = document.getElementById('musicToggleButton'); // NUEVO: Referencia al botón de música
 
-const gridSize = 20; // Tamaño de cada "cuadrado"
-let snake = [{ x: 10, y: 10 }]; // Posición inicial
-let food = {}; // Posición de la comida normal
-let specialFood = {}; // Nuevo: Posición de la comida especial
-let dx = gridSize; // Velocidad X inicial
-let dy = 0; // Velocidad Y inicial
+const gridSize = 20;
+let snake = [{ x: 10, y: 10 }];
+let food = {};
+let specialFood = {};
+let dx = gridSize;
+let dy = 0;
 let score = 0;
 let gameOver = false;
 let gameInterval;
-let specialFoodTimer; // Nuevo: Para controlar la aparición de la comida especial
+let specialFoodTimer;
 
-// Nuevo: Constantes para la comida especial
-const SPECIAL_FOOD_CHANCE = 0.2; // 20% de probabilidad de que aparezca comida especial
-const SPECIAL_FOOD_DURATION = 5000; // La comida especial dura 5 segundos
-const SPECIAL_FOOD_SCORE = 10; // Puntaje que otorga la comida especial
-const NORMAL_FOOD_SCORE = 1; // Puntaje que otorga la comida normal
+const SPECIAL_FOOD_CHANCE = 0.2;
+const SPECIAL_FOOD_DURATION = 5000;
+const SPECIAL_FOOD_SCORE = 10;
+const NORMAL_FOOD_SCORE = 1;
+
+let musicPlaying = false; // NUEVO: Estado de la música
 
 // Función para generar una posición aleatoria para la comida (normal o especial)
 function generatePosition() {
@@ -32,7 +35,7 @@ function generatePosition() {
     // Asegurarse de que la posición no esté dentro de la serpiente
     for (let i = 0; i < snake.length; i++) {
         if (newPos.x === snake[i].x && newPos.y === snake[i].y) {
-            return generatePosition(); // Si coincide, genera una nueva posición
+            return generatePosition();
         }
     }
     return newPos;
@@ -40,85 +43,72 @@ function generatePosition() {
 
 function generateFood() {
     food = generatePosition();
-    // Nuevo: Decidir si generar comida especial
     if (Math.random() < SPECIAL_FOOD_CHANCE) {
         specialFood = generatePosition();
-        // Asegurarse de que la comida especial no aparezca en el mismo lugar que la comida normal
         if (specialFood.x === food.x && specialFood.y === food.y) {
             specialFood = generatePosition();
         }
-        // Configurar un temporizador para eliminar la comida especial
-        clearTimeout(specialFoodTimer); // Limpiar cualquier temporizador anterior
+        clearTimeout(specialFoodTimer);
         specialFoodTimer = setTimeout(() => {
-            specialFood = {}; // Eliminar la comida especial
+            specialFood = {};
         }, SPECIAL_FOOD_DURATION);
     } else {
-        specialFood = {}; // Asegurarse de que no haya comida especial si no es el momento
+        specialFood = {};
     }
 }
 
-// Función para dibujar la serpiente
 function drawSnake() {
     for (let i = 0; i < snake.length; i++) {
-        ctx.fillStyle = (i === 0) ? '#2ecc71' : '#27ae60'; // Cabeza verde claro, cuerpo verde oscuro
-        ctx.strokeStyle = '#1a242f'; // Borde de la serpiente
+        ctx.fillStyle = (i === 0) ? '#2ecc71' : '#27ae60';
+        ctx.strokeStyle = '#1a242f';
         ctx.fillRect(snake[i].x, snake[i].y, gridSize, gridSize);
         ctx.strokeRect(snake[i].x, snake[i].y, gridSize, gridSize);
     }
 }
 
-// Función para dibujar la comida normal
 function drawFood() {
-    ctx.fillStyle = '#e74c3c'; // Rojo para la comida normal
+    ctx.fillStyle = '#e74c3c';
     ctx.strokeStyle = '#c0392b';
     ctx.fillRect(food.x, food.y, gridSize, gridSize);
     ctx.strokeRect(food.x, food.y, gridSize, gridSize);
 }
 
-// Nuevo: Función para dibujar la comida especial
 function drawSpecialFood() {
     if (specialFood.x !== undefined && specialFood.y !== undefined) {
-        ctx.fillStyle = '#9b59b6'; // Un color púrpura vibrante para la comida especial
+        ctx.fillStyle = '#9b59b6';
         ctx.strokeStyle = '#8e44ad';
         ctx.fillRect(specialFood.x, specialFood.y, gridSize, gridSize);
         ctx.strokeRect(specialFood.x, specialFood.y, gridSize, gridSize);
     }
 }
 
-// Función principal del juego (bucle)
 function gameLoop() {
     if (gameOver) return;
 
-    // Mover la serpiente
     const head = { x: snake[0].x + dx, y: snake[0].y + dy };
-    snake.unshift(head); // Añadir la nueva cabeza
+    snake.unshift(head);
 
-    // Nuevo: Detección de colisión con la comida especial
     if (specialFood.x !== undefined && specialFood.y !== undefined &&
         head.x === specialFood.x && head.y === specialFood.y) {
-        score += SPECIAL_FOOD_SCORE; // Sumar puntaje de comida especial
-        specialFood = {}; // Eliminar comida especial
-        clearTimeout(specialFoodTimer); // Detener el temporizador de la comida especial
-        generateFood(); // Generar nueva comida normal y quizás otra especial
+        score += SPECIAL_FOOD_SCORE;
+        specialFood = {};
+        clearTimeout(specialFoodTimer);
+        generateFood();
     }
-    // Detección de colisión con la comida normal
     else if (head.x === food.x && head.y === food.y) {
-        score += NORMAL_FOOD_SCORE; // Sumar puntaje de comida normal
-        generateFood(); // Generar nueva comida
+        score += NORMAL_FOOD_SCORE;
+        generateFood();
     } else {
-        snake.pop(); // Si no comió, elimina la cola para simular el movimiento
+        snake.pop();
     }
 
-    // Actualizar el display de puntaje
     scoreDisplay.textContent = `Puntaje: ${score}`;
 
-    // Detección de colisión con las paredes
     if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
         endGame();
         return;
     }
 
-    // Detección de colisión con el propio cuerpo
     for (let i = 1; i < snake.length; i++) {
         if (head.x === snake[i].x && head.y === snake[i].y) {
             endGame();
@@ -126,16 +116,13 @@ function gameLoop() {
         }
     }
 
-    // Limpiar el lienzo
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Dibujar los elementos
     drawFood();
-    drawSpecialFood(); // Nuevo: Dibujar comida especial
+    drawSpecialFood();
     drawSnake();
 }
 
-// Función para manejar las entradas del teclado
 function changeDirection(event) {
     const keyPressed = event.keyCode;
     const LEFT = 37;
@@ -169,31 +156,63 @@ function changeDirection(event) {
 // Función para iniciar el juego
 function startGame() {
     gameOver = false;
-    snake = [{ x: 10 * gridSize, y: 10 * gridSize }]; // Reiniciar posición
-    dx = gridSize; // Reiniciar dirección
+    snake = [{ x: 10 * gridSize, y: 10 * gridSize }];
+    dx = gridSize;
     dy = 0;
     score = 0;
-    scoreDisplay.textContent = `Puntaje: ${score}`; // Resetear el display de puntaje
-    generateFood(); // Generar comida inicial
-    if (gameInterval) clearInterval(gameInterval); // Limpiar cualquier intervalo anterior
-    if (specialFoodTimer) clearTimeout(specialFoodTimer); // Limpiar temporizador de comida especial
-    gameInterval = setInterval(gameLoop, 100); // Velocidad del juego (milisegundos)
-    startButton.textContent = "Reiniciar Juego"; // Cambiar texto del botón
+    scoreDisplay.textContent = `Puntaje: ${score}`;
+    generateFood();
+    if (gameInterval) clearInterval(gameInterval);
+    if (specialFoodTimer) clearTimeout(specialFoodTimer);
+    gameInterval = setInterval(gameLoop, 100);
+    startButton.textContent = "Reiniciar Juego";
+
+    // NUEVO: Reproducir la música al iniciar el juego
+    // Solo si el usuario ya ha interactuado con el botón de música
+    if (musicPlaying) {
+        gameMusic.play().catch(error => {
+            console.log("No se pudo reproducir la música automáticamente:", error);
+            // Informar al usuario que necesita activar la música manualmente si el navegador lo bloqueó
+        });
+    }
 }
 
 // Función para terminar el juego
 function endGame() {
     gameOver = true;
     clearInterval(gameInterval);
-    if (specialFoodTimer) clearTimeout(specialFoodTimer); // Limpiar temporizador al terminar el juego
+    if (specialFoodTimer) clearTimeout(specialFoodTimer);
     alert(`¡Juego Terminado! Tu puntuación final fue: ${score}. Presiona "Reiniciar Juego" para volver a jugar.`);
+    gameMusic.pause(); // NUEVO: Pausar la música al terminar el juego
+    gameMusic.currentTime = 0; // NUEVO: Reiniciar la música al principio
 }
+
+// NUEVO: Función para alternar la reproducción de la música
+function toggleMusic() {
+    if (gameMusic.paused) {
+        gameMusic.play().then(() => {
+            musicPlaying = true;
+            musicToggleButton.textContent = "Música OFF";
+        }).catch(error => {
+            console.log("Error al intentar reproducir la música:", error);
+            alert("El navegador ha bloqueado la reproducción automática de música. Por favor, interactúa con la página.");
+        });
+    } else {
+        gameMusic.pause();
+        musicPlaying = false;
+        musicToggleButton.textContent = "Música ON";
+    }
+}
+
 
 // Event Listeners
 document.addEventListener('keydown', changeDirection);
 startButton.addEventListener('click', startGame);
+musicToggleButton.addEventListener('click', toggleMusic); // NUEVO: Listener para el botón de música
 
 // Iniciar el juego al cargar la página por primera vez
 generateFood();
-drawSnake(); // Dibujar la serpiente inicial
-drawFood(); // Dibujar la comida inicial
+drawSnake();
+drawFood();
+// NUEVO: Ajustar el volumen por defecto (entre 0 y 1)
+gameMusic.volume = 0.3; // Volumen bajo para empezar

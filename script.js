@@ -215,4 +215,4 @@ generateFood();
 drawSnake();
 drawFood();
 // NUEVO: Ajustar el volumen por defecto (entre 0 y 1)
-gameMusic.volume = 0.3; // Volumen bajo para empezar
+gameMusic.volume = 1; // Volumen bajo para empezar

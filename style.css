@@ -52,3 +52,21 @@ canvas {
 #startButton:hover {
     background-color: #2ecc71; /* Un verde más claro al pasar el ratón */
 }
+
+/* ... (código CSS anterior) ... */
+
+#musicToggleButton {
+    background-color: #3498db; /* Un azul para el botón de música */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px; /* Para separarlo un poco del botón de inicio */
+}
+
+#musicToggleButton:hover {
+    background-color: #2980b9; /* Un azul más oscuro al pasar el ratón */
+}
